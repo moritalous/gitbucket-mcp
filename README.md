@@ -1,14 +1,15 @@
 # GitBucket MCP Server (非公式)
 
-このプロジェクトは、GitBucketのMCP(Model Context Protocol)サーバーの非公式実装です。MCPを通じてGitBucketのAPIにアクセスし、リポジトリ、イシュー、プルリクエスト、コミット、ブランチなどの情報を取得・操作するためのツールを提供します。
+このプロジェクトは、GitBucketのMCP(Model Context Protocol)サーバーの非公式実装です。FastMCPとOpenAPI仕様を使用して、GitBucketのAPIにアクセスし、リポジトリ、イシュー、プルリクエストなどの情報を取得・操作するためのツールを提供します。
 
 ## 概要
 
-MCP(Model Context Protocol)は、アプリケーションがLLM（大規模言語モデル）にコンテキストを提供するための標準化されたプロトコルです。このサーバーを使用することで、LLMはGitBucketのリソースにアクセスし、GitHubフローに似た操作を行うことができます。
+MCP(Model Context Protocol)は、アプリケーションがLLM（大規模言語モデル）にコンテキストを提供するための標準化されたプロトコルです。このサーバーは、GitBucketのOpenAPI仕様を基にFastMCPを使用して自動生成されており、LLMがGitBucketのリソースにアクセスできるようになります。
 
-- GitBucketツールで、リポジトリの一覧を取得してください。
-- GitBucketツールで、イシューを作成してください。
-- GitBucketツールで、プルリクエストを作成してください。
+主な機能：
+- リポジトリの一覧取得と詳細情報の取得
+- イシューの作成、取得、コメント機能
+- プルリクエストの作成、取得、更新機能
 
 ## インストール方法
 
@@ -30,11 +31,17 @@ cd gitbucket-mcp
 2. 依存パッケージをインストールします：
 
 ```bash
-uv sync -U
+uv sync
 ```
 
 ## 設定方法
 
+このサーバーを使用するには、以下の環境変数を設定する必要があります：
+
+- `BASE_URL`: GitBucketサーバーのベースURL（例：`http://localhost:8080`）
+- `GITBUCKET_API_KEY`: GitBucketのAPIキー
+
+MCPクライアント（Claude Desktop等）の設定例：
 
 ```json
 {
@@ -56,14 +63,9 @@ uv sync -U
 }
 ```
 
-このサーバーを使用するには、以下の環境変数を設定する必要があります：
+## 利用可能なツール
 
-- `BASE_URL`: GitBucketサーバーのベースURL（例：`http://localhost:8080`）
-- `GITBUCKET_API_KEY`: GitBucketのAPIキー
-
-## ツール一覧
-
-以下のツールを定義していますが、OpenAPI仕様に定義されているAPIから任意のAPIを有効化して使用することができます。
+現在、以下のAPIが利用可能です：
 
 | メソッド | API | 内容 |
 | --- | --- | --- |
@@ -78,18 +80,24 @@ uv sync -U
 | POST | /api/v3/repos/{owner}/{repository}/pulls | 新しいプルリクエストを作成 |
 | GET | /api/v3/repos/{owner}/{repository}/pulls/{pull_number} | 特定のプルリクエストの情報を取得 |
 | PATCH | /api/v3/repos/{owner}/{repository}/pulls/{pull_number} | プルリクエストを更新 |
-| GET | /api/v3/repos/{owner}/{repository}/pulls/{pull_number}/commits | プルリクエストのコミット一覧を取得 |
-| GET | /api/v3/repos/{owner}/{repository}/pulls/{pull_number}/merge | プルリクエストのマージ状態を確認 |
-| PUT | /api/v3/repos/{owner}/{repository}/pulls/{pull_number}/merge | プルリクエストをマージ |
-| GET | /api/v3/repos/{owner}/{repository}/branches | ブランチ一覧を取得 |
-| GET | /api/v3/repos/{owner}/{repository}/branches/{branch} | 特定のブランチの情報を取得 |
-| GET | /api/v3/repos/{owner}/{repository}/commits | コミット一覧を取得 |
-| GET | /api/v3/repos/{owner}/{repository}/commits/{sha} | 特定のコミットの情報を取得 |
+
+注意：OpenAPI仕様には他にも多くのAPIが定義されていますが、現在は上記のAPIのみが有効化されています。
 
 
 ## 制限事項
 
-このMCPサーバーは非公式の実装であり、GitBucketの公式サポートを受けていません。GitBucketのAPIに変更があった場合、このサーバーも更新が必要になる可能性があります。
+このMCPサーバーは非公式の実装であり、GitBucketの公式サポートを受けていません。
+
+### 現在の制限
+
+- OpenAPI仕様には多くのAPIが定義されていますが、以下の理由により多くのAPIがコメントアウトされています：
+  - 一部のAPIで必要なエンドポイントが不足している
+  - リクエストボディのネストが深すぎてツール読み込みでエラーが発生する
+  - 動作しないAPIが存在する
+
+- 現在有効化されているのは、基本的なリポジトリ、イシュー、プルリクエストの操作のみです
+
+- GitBucketのAPIに変更があった場合、このサーバーも更新が必要になる可能性があります
 
 ## ライセンス
 
@@ -101,9 +109,9 @@ uv sync -U
 
 ## 謝辞
 
-大変感謝しております。
+このプロジェクトの開発にあたり、以下のプロジェクトに大変感謝しております：
 
-- [GitBucket](https://github.com/gitbucket/gitbucket)
-- [FastMCP](https://github.com/jlowin/fastmcp)
-- [Model Context Protocol](https://modelcontextprotocol.github.io/)
+- [GitBucket](https://github.com/gitbucket/gitbucket) - オープンソースのGitプラットフォーム
+- [FastMCP](https://github.com/jlowin/fastmcp) - MCPサーバーの高速実装フレームワーク
+- [Model Context Protocol](https://modelcontextprotocol.github.io/) - LLMとアプリケーション間の標準プロトコル
 
