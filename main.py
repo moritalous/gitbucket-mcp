@@ -30,7 +30,7 @@ tags = [
     # "Branches", # TODO 足りないAPIがある
     # "Collaborators",
     # "Commits",
-    # "Contents", # TODO ツール読み込みでエラーになる？
+    # "Contents", # TODO ツール読み込みでエラー（リクエストボディのネストが深いから？）
     # "GitReferences",
     # "Issues",
     # "Labels",
@@ -41,7 +41,7 @@ tags = [
     # "Repositories", # TODO
     # "Tags",
     # "Users",
-    # "Webhooks", # TODO ツール読み込みでエラーになる？
+    # "Webhooks", # TODO ツール読み込みでエラー（リクエストボディのネストが深いから？）
 ]
 
 
