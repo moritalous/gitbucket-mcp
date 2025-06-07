@@ -26,16 +26,41 @@ client = httpx.AsyncClient(
 with open("openapi.json", "r") as f:
     openapi_spec = json.load(f)
 
+tags = [
+    # "Branches", # TODO 足りないAPIがある
+    # "Collaborators",
+    # "Commits",
+    # "Contents", # TODO ツール読み込みでエラーになる？
+    # "GitReferences",
+    # "Issues",
+    # "Labels",
+    # "Milestones",
+    # "Organizations", # TODO 足りないAPIがある
+    # "PullRequests",
+    # "Releases", # TODO upload_release_assetが動作しない
+    # "Repositories", # TODO
+    # "Tags",
+    # "Users",
+    # "Webhooks", # TODO ツール読み込みでエラーになる？
+]
+
+
 mcp = FastMCP.from_openapi(
     openapi_spec=openapi_spec,
     client=client,
     name="GitBucket MCP Server",
-    route_maps=[
-        # RouteMap(
-        #     methods=["*"],
-        #     pattern=r".*",
-        #     mcp_type=MCPType.TOOL,
-        # ),  # 全てをToolとして定義
+    route_maps=[]
+    + list(
+        map(
+            lambda tag: RouteMap(
+                methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+                tags={tag},
+                mcp_type=MCPType.TOOL,
+            ),
+            tags,
+        )
+    )
+    + [
         RouteMap(
             methods=["GET"], pattern="^/api/v3/repositories$", mcp_type=MCPType.TOOL
         ),  # /api/v3/repositories
@@ -69,36 +94,8 @@ mcp = FastMCP.from_openapi(
             pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/pulls\/[^\/]+$",
             mcp_type=MCPType.TOOL,
         ),  # /api/v3/repos/{owner}/{repository}/pulls/{pull_number}
-        RouteMap(
-            methods=["GET"],
-            pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/pulls\/[^\/]+\/commits$",
-            mcp_type=MCPType.TOOL,
-        ),  # /api/v3/repos/{owner}/{repository}/pulls/{pull_number}/commits
-        RouteMap(
-            methods=["GET", "PUT"],
-            pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/pulls\/[^\/]+\/merge$",
-            mcp_type=MCPType.TOOL,
-        ),  # /api/v3/repos/{owner}/{repository}/pulls/{pull_number}/merge
-        RouteMap(
-            methods=["GET"],
-            pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/branches$",
-            mcp_type=MCPType.TOOL,
-        ),  # /api/v3/repos/{owner}/{repository}/branches
-        RouteMap(
-            methods=["GET"],
-            pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/branches\/[^\/]+$",
-            mcp_type=MCPType.TOOL,
-        ),  # /api/v3/repos/{owner}/{repository}/branches/{branch}
-        RouteMap(
-            methods=["GET"],
-            pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/commits$",
-            mcp_type=MCPType.TOOL,
-        ),  # /api/v3/repos/{owner}/{repository}/commits
-        RouteMap(
-            methods=["GET"],
-            pattern=r"^\/api\/v3\/repos\/[^\/]+\/[^\/]+\/commits\/[^\/]+$",
-            mcp_type=MCPType.TOOL,
-        ),  # /api/v3/repos/{owner}/{repository}/commits/{sha}
+    ]
+    + [
         RouteMap(
             methods=["DELETE", "POST", "PUT", "PATCH"],
             pattern=r".*",
